@@ -3,9 +3,9 @@ merge = require "merge-options"
 Promise = require "yaku"
 fs = require "fs-extra"
 ora = require "ora"
-{fork} = require "child_process"
-{isString, arrayize, patternToFiles, filesToLookup, flatten, prepareFile, chunkify, shuffle} = require "./_helper"
+{isString, arrayize, patternToFiles, filesToLookup, prepareFile} = require "./_helper"
 defaults = require "./_defaults"
+handleThat = require "handle-that"
 
 configTime = 0
 
@@ -61,7 +61,7 @@ module.exports = (config) =>
             console.log "chew-away: #{outfile.path} is gone off" if o.verbose
             deletes.push fs.remove(outfile.path)
       return work
-    work = flatten(work)
+    work = handleThat.flatten(work)
     if config.test
       console.log "chew-away: to chew:"
       work.forEach (file) =>
@@ -77,24 +77,16 @@ module.exports = (config) =>
     if (remaining = work.length) > 0
       console.log "chew-away: ready to chew away at #{remaining} files"
       console.log "chew-away: #{deletes.length} files are gone off (deleting)" if deletes.length > 0
-      workers = Math.min(remaining, (config.concurrency or 4))
-      console.log "chew-away: going to fill #{workers} mouths"
-      chunks = chunkify(shuffle(work), Math.min(workers, remaining / Math.sqrt(2)) )
       spinner = ora("#{remaining} files remaining...").start()
-      for i in [0..workers]
-        worker = fork("#{__dirname}/_worker")
-        worker.on "message", ((w, count) => 
-          pieces = chunks.shift()
-          if count
-            spinner.text = "#{remaining -= count} files remaining..."
-          if pieces
-            w.send pieces
-          else
-            i--
-            w.disconnect()
-            if i == 0
-              spinner.succeed "pleasantly finished - See you next time! :D"
-          ).bind(null, worker)
+      handleThat work,
+        worker: path.resolve(__dirname, "_worker")
+        flatten: false
+        onText: (lines) => 
+          spinner.stop()
+          console.log lines.join("\n")
+          spinner.start("#{remaining} files remaining...")
+        onProgress: (count) => spinner.text = "#{remaining = count} files remaining..."
+        onFinish: => spinner.succeed "pleasantly finished - See you next time! :D"
     else
       console.log "chew-away: nothing to chew at :*("
   catch e

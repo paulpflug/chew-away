@@ -2,13 +2,6 @@ path = require "path"
 glob = require "glob"
 Promise = require "yaku"
 
-module.exports.flatten = (arrs) =>
-  target = []
-  for arr in arrs 
-    for obj in arr
-      target.push obj
-  return target
-
 module.exports.arrayize = (obj) => 
   if Array.isArray(obj)
     return obj
@@ -39,27 +32,3 @@ module.exports.prepareFile = (file, o, outpath) =>
     file.chew = tmp
   delete file.mtime
 
-module.exports.chunkify = (a, n) =>
-  return [a] if n < 2
-  len = a.length
-  out = []
-  i = 0
-  if len % n == 0
-    size = Math.floor(len / n)
-    while (i < len) 
-      out.push(a.slice(i, i += size))
-  else
-    while (i < len) 
-      size = Math.ceil((len - i) / n--)
-      out.push(a.slice(i, i += size))
-  return out
-
-module.exports.shuffle = (array) =>
-  counter = array.length
-  while (0 < counter) 
-    index = Math.floor(Math.random() * counter)
-    counter--
-    temp = array[counter]
-    array[counter] = array[index]
-    array[index] = temp
-  return array
