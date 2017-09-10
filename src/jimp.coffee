@@ -5,7 +5,7 @@ module.exports = (file, args) =>
   args = args.map (cmd) => cmd.map (prop) => if jimp[prop] then jimp[prop] else prop
   chain = args.reduce ((current, cmd) => 
     current.then ((cmd, img) =>  
-      console.log "chew-away: chewing on #{file.name} (jimp-#{cmd[0]})" if file.verbose
+      file.log "chewing on #{file.name} (jimp-#{cmd[0]})", 1 
       img[cmd.shift()].apply(img,cmd)
       ).bind null, cmd
     return current

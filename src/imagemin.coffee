@@ -6,7 +6,7 @@ cache = {}
 module.exports = (file, args) =>
   args = [args] unless Array.isArray(args[0])
   plugins = args.map (plugin) =>
-    name = plugin.shift()
+    name = plugin[0]
     unless (plg = cache[name])?
       try
         plg = require name
@@ -19,8 +19,8 @@ module.exports = (file, args) =>
           catch
             throw new Error "couldn't load #{name}"
       cache[name] = plg
-    return plg(plugin.shift())
-  console.log "chew-away: scrunching #{file.name} (imagemin)" if file.verbose
+    return plg(plugin[1])
+  file.log "scrunching #{file.name} (imagemin)", 1
   unless file.buffer 
     await imagemin([file.name], path.dirname(file.target), plugins: plugins)
   else

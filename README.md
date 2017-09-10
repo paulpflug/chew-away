@@ -25,18 +25,28 @@ module.exports = {
   defaults: {
     target: "deploy",//                 output
     excess: "delete",// default: "keep" what do do with excess files
-    verbose: false,  // default: true   verbose logging
+    verbose: 0,      // default: 1   verbose logging
     overwrite: false,// default: false  always overwrite
     // will overwrite source files if target files are newer
     // CAREFULL - you can lose data !!!
     sync: false,     // default: false
     chew: {
-      jpg: [
-        // see jimp for available methods
-        ["jimp", [["resize", "AUTO", 400]]], 
-        // make sure you have the corresponding plugin installed!
-        ["imagemin", ["imagemin-guetzli", {quality: 87}]] 
-      ],
+      jpg: {
+        // you can define multiple output files
+        jpg:[
+          // see jimp for available methods
+          ["jimp", [["resize", "AUTO", 400]]], 
+          // make sure you have the corresponding plugin installed!
+          ["imagemin", ["imagemin-guetzli", {quality: 87}]] 
+        ],
+        webp: ["imagemin", ["imagemin-webp", {quality: 87}]],
+        "small.jpg":[
+          ["jimp", [["resize", "AUTO", 200]]], 
+          ["imagemin", ["imagemin-guetzli", {quality: 87}]] 
+        ],
+      },
+      // or only one output
+      png: ["imagemin", ["imagemin-zopfli", {quality: 87}]],
       txt: "copy"
     }
   },

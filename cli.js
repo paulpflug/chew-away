@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require("./lib/chew-away.js")(process.argv[2])
+require("./lib/_chew-away.js")(process.argv[2])
