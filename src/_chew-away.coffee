@@ -99,11 +99,11 @@ module.exports = (config) =>
       handleThat work,
         worker: path.resolve(__dirname, "_worker")
         flatten: false
-        onText: (lines) => 
+        onText: (lines, remaining) => 
           spinner.stop()
           console.log lines.join("\n")
           spinner.start("#{remaining} files remaining...")
-        onProgress: (count) => spinner.text = "#{remaining = count} files remaining..."
+        onProgress: (remaining) => spinner.text = "#{remaining} files remaining..."
         onFinish: => spinner.succeed chalk.green "pleasantly finished - See you next time! :D"
     else
       console.log "chew-away: nothing to chew at :*("
