@@ -18,6 +18,7 @@ process = (file, target, job) =>
     file.log "#{path.basename(clone.target)} spat out"
 colors = null
 module.exports = (files, nr, length) => Promise.all files.map (file, i) =>
+  length = 2 if length < 2
   colors ?= gradient.hsv(length, 'long')
   current = nr+i
   worker =  chalk.hex(colors[current].toHex())("file #{current+1}")
