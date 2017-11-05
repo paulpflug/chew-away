@@ -7,29 +7,15 @@ ora = require "ora"
 defaults = require "./_defaults"
 handleThat = require "handle-that"
 chalk = require "chalk"
+readConf = require "read-conf"
 
-configTime = 0
+
 
 module.exports = (config) =>
   try
-    unless config?
-      files = await fs.readdir(process.cwd())
-      for ext in ["js","coffee"]
-        if ~files.indexOf(tmp = "chew-away.config.#{ext}")
-          config = tmp
-          break
-      throw new Error "no chew-away.config found" unless config 
-    
-    if isString(config)
-      if path.extname(config) == ".coffee"
-        try
-          require "coffeescript/register"
-        catch
-          try
-            require "coffee-script/register"
-      config = require (configPath = path.resolve(config))
-      stats = await fs.stat configPath
-      configTime = stats.mtimeMs
+    config ?= "chew-away.config"
+    config = await readConf config if isString(config)
+    config.mtime ?= 0
     
     deleted = {lookup: {}, worker: []}
     _log = []
@@ -50,12 +36,12 @@ module.exports = (config) =>
         prepareFile(file, o)
         if file.chew?
           for target, job of file.chew
-            outName = path.basename(target)
+            outName = target
             notDeleteLookup[outName] = true
             if o.overwrite or 
                 not (outfile = outLookup[outName])? or 
                 outfile.mtime < file.mtime or 
-                (outfile.mtime < configTime and not o.sync)
+                (outfile.mtime < config.mtime and not o.sync)
               unless ~work.indexOf file
                 log i, chalk.cyan "chew-away: scheduled #{file.name} for chewing" if o.verbose
                 work.push file 
@@ -72,10 +58,10 @@ module.exports = (config) =>
                 log i, chalk.green "chew-away: #{outfile.name} is up-to-date" if o.verbose
       if o.excess == "delete"
         for outfile in output
-          if not notDeleteLookup[outfile.name] and not deleted.lookup[outfile.name]
+          if not notDeleteLookup[outfile.path] and not deleted.lookup[outfile.path]
             console.log "chew-away: #{outfile.path} is gone off" if o.verbose
             deleted.worker.push fs.remove(outfile.path)
-            deleted.lookup[outfile.name] = true
+            deleted.lookup[outfile.path] = true
       return work
     print()
     work = handleThat.flatten(work)

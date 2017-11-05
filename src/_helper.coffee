@@ -31,7 +31,7 @@ module.exports.patternToFiles = (o, cwd, log) => new Promise (resolve, reject) =
       s = stats[filepath]
       return name: filename, path: filepath, mtime: s.mtimeMs, atime: s.atimeMs
 
-module.exports.filesToLookup = (arr) => arr.reduce ((acc, current) => acc[current.name] = current; return acc),{}
+module.exports.filesToLookup = (arr) => arr.reduce ((acc, current) => acc[current.path] = current; return acc),{}
 
 module.exports.prepareFile = (file, o) =>
   outpath = path.resolve o.target, file.name
